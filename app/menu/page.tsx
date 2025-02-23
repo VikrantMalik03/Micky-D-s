@@ -33,8 +33,8 @@ export default function MenuPage() {
         const data = await response.json();
         setMenuItems(data);
         // Extract unique categories
-        const uniqueCategories = [...new Set(data.map((item: MenuItem) => item.category))];
-        setCategories(uniqueCategories);
+        // const uniqueCategories = [...new Set(data.map((item: MenuItem) => item.category))];
+        // setCategories(uniqueCategories);
       } catch (error) {
         console.error('Failed to fetch menu items:', error);
       }

@@ -21,7 +21,7 @@ export default function ReservationsPage() {
     // Prepare the data to send
     const reservationData = {
       action: 'reservation', // Add action parameter
-      name: (e.target as HTMLFormElement).name.value,
+      name: ((e.target as HTMLFormElement).elements.namedItem('name') as HTMLInputElement).value,
       email: (e.target as HTMLFormElement).email.value,
       phone: (e.target as HTMLFormElement).phone.value,
       guests: (e.target as HTMLFormElement).guests.value,

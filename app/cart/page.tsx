@@ -20,12 +20,12 @@ export default function CartPage() {
   // Function to validate promo code
   const validatePromoCode = () => {
     // Example promo codes - in a real app, this would validate against a backend
-    const validPromoCodes = {
+    const validPromoCodes: { [key: string]: number } = {
       'SAVE10': 10,
       'WELCOME20': 20
     };
 
-    if (validPromoCodes[promoCode]) {
+    if (promoCode in validPromoCodes) {
       setIsPromoValid(true);
       setPromoDiscount(validPromoCodes[promoCode]);
     } else {
