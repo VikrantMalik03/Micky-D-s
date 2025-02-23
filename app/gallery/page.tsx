@@ -1,6 +1,9 @@
+'use client';
+
 import Image from 'next/image';
 import { Card } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useEffect, useState } from 'react';
 
 interface GalleryImage {
   url: string;
@@ -9,64 +12,27 @@ interface GalleryImage {
   description: string;
 }
 
-const galleryImages: GalleryImage[] = [
-  {
-    url: 'https://images.unsplash.com/photo-1414235077428-338989a2e8c0',
-    title: 'Main Dining Room',
-    category: 'interior',
-    description: 'Our elegant main dining space with crystal chandeliers'
-  },
-  {
-    url: 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4',
-    title: 'Private Dining',
-    category: 'interior',
-    description: 'Intimate private dining room for special occasions'
-  },
-  {
-    url: 'https://images.unsplash.com/photo-1592861956120-e524fc739696',
-    title: 'Signature Dish',
-    category: 'food',
-    description: 'Pan-seared scallops with citrus butter sauce'
-  },
-  {
-    url: 'https://images.unsplash.com/photo-1504674900247-0877df9cc836',
-    title: 'Chef\'s Special',
-    category: 'food',
-    description: 'Seasonal tasting menu highlights'
-  },
-  {
-    url: 'https://images.unsplash.com/photo-1543007630-9710e4a00a20',
-    title: 'Wine Cellar',
-    category: 'interior',
-    description: 'Our extensive collection of fine wines'
-  },
-  {
-    url: 'https://images.unsplash.com/photo-1551218808-94e220e084d2',
-    title: 'Private Events',
-    category: 'events',
-    description: 'Celebrating special moments'
-  },
-  {
-    url: 'https://images.unsplash.com/photo-1467003909585-2f8a72700288',
-    title: 'Dessert Selection',
-    category: 'food',
-    description: 'Handcrafted desserts by our pastry chef'
-  },
-  {
-    url: 'https://images.unsplash.com/photo-1519671482749-fd09be7ccebf',
-    title: 'Bar Area',
-    category: 'interior',
-    description: 'Craft cocktails and fine spirits'
-  },
-  {
-    url: 'https://images.unsplash.com/photo-1555244162-803834f70033',
-    title: 'Special Event',
-    category: 'events',
-    description: 'Wine tasting and pairing events'
-  }
-];
-
 export default function GalleryPage() {
+  const [galleryImages, setGalleryImages] = useState<GalleryImage[]>([]);
+
+  useEffect(() => {
+    // Fetch gallery images from the backend
+    async function fetchGalleryImages() {
+      try {
+        const response = await fetch('https://mickybackend.vercel.app/api/gallery');
+        if (!response.ok) {
+          throw new Error('Failed to fetch gallery images');
+        }
+        const data = await response.json();
+        setGalleryImages(data);
+      } catch (error) {
+        console.error('Error fetching gallery images:', error);
+      }
+    }
+
+    fetchGalleryImages();
+  }, []);
+
   return (
     <div className="container mx-auto px-4 py-12">
       <div className="text-center mb-12">

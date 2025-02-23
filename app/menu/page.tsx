@@ -6,6 +6,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useCart } from '@/lib/cart-context';
 import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
 
 interface MenuItem {
   id: number;
@@ -15,136 +16,32 @@ interface MenuItem {
   image: string;
   category: string;
 }
-  
-  const menuItems: MenuItem[] = [
-    // Starters
-    {
-      id: 1,
-      name: 'Deep Fried Veggies Platter',
-      description: 'Battered mushrooms, zucchini, mozza sticks & onion rings',
-      price: 10.88,
-      image: '/appetizer.webp',
-      category: 'starters'
-    },
-    {
-      id: 2,
-      name: 'Mozzarella Sticks',
-      description: 'Golden-fried mozzarella sticks with marinara sauce',
-      price: 6.99,
-      image: '/mozza-sticks.webp',
-      category: 'starters'
-    },
-    {
-      id: 3,
-      name: 'Chicken Strips',
-      description: 'Hand-breaded chicken strips served with dipping sauce',
-      price: 11.49,
-      image: '/chicken-strips.webp',
-      category: 'starters'
-    },
-    {
-      id: 4,
-      name: 'Wings',
-      description: 'Crispy chicken wings with your choice of sauce',
-      price: 12.88,
-      image: '/wings.webp',
-      category: 'starters'
-    },
-    {
-      id: 5,
-      name: 'Munchie Platter',
-      description: 'Chicken strips, wings, mozza sticks, pepperoni, onion rings & fries',
-      price: 19.49,
-      image: '/platter.webp',
-      category: 'starters'
-    },
-    // Mains
-    {
-      id: 6,
-      name: 'Mickey Special Sub',
-      description: 'Ham, roast beef, turkey, salami & pepp',
-      price: 15.49,
-      image: '/sub.webp',
-      category: 'mains'
-    },
-    {
-      id: 7,
-      name: 'Fisherman\'s Platter',
-      description: '1pc fish, 5 scallops, 5 shrimp, bag clams',
-      price: 29.99,
-      image: '/seafood-platter.webp',
-      category: 'mains'
-    },
-    {
-      id: 8,
-      name: 'Roast Beef Dinner',
-      description: 'Traditional roast beef served with sides',
-      price: 18.99,
-      image: '/roast-beef.webp',
-      category: 'mains'
-    },
-    {
-      id: 9,
-      name: 'Special Poutine',
-      description: 'Choice of hamburger, donair, bacon, chicken strip, or veggie toppings',
-      price: 10.99,
-      image: '/poutine.webp',
-      category: 'mains'
-    },
-    {
-      id: 10,
-      name: 'Fish & Chips',
-      description: 'Hand-battered fish served with homemade fries',
-      price: 16.99,
-      image: '/fish-chips.webp',
-      category: 'mains'
-    },
-    // Desserts
-    {
-      id: 11,
-      name: 'Coconut Cream Pie',
-      description: 'Classic coconut cream pie with whipped topping',
-      price: 6.88,
-      image: '/coconut-pie.webp',
-      category: 'desserts'
-    },
-    {
-      id: 12,
-      name: 'Butterscotch Pie',
-      description: 'Rich butterscotch filling in a flaky crust',
-      price: 6.88,
-      image: '/butterscotch-pie.webp',
-      category: 'desserts'
-    },
-    {
-      id: 13,
-      name: 'Lemon Pie',
-      description: 'Tangy lemon pie with meringue topping',
-      price: 6.88,
-      image: '/lemon-pie.webp',
-      category: 'desserts'
-    },
-    {
-      id: 14,
-      name: 'Ice Cream',
-      description: 'Creamy vanilla ice cream',
-      price: 3.99,
-      image: '/ice-cream.webp',
-      category: 'desserts'
-    },
-    {
-      id: 15,
-      name: 'Milkshake',
-      description: 'Choice of chocolate, vanilla, or strawberry',
-      price: 7.49,
-      image: '/milkshake.webp',
-      category: 'desserts'
-    }
-  ];
 
 export default function MenuPage() {
   const { addItem } = useCart();
   const router = useRouter();
+  const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
+  const [categories, setCategories] = useState<string[]>([]);
+
+  useEffect(() => {
+    async function fetchMenuItems() {
+      try {
+        const response = await fetch('https://mickybackend.vercel.app/api/menu');
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const data = await response.json();
+        setMenuItems(data);
+        // Extract unique categories
+        const uniqueCategories = [...new Set(data.map((item: MenuItem) => item.category))];
+        setCategories(uniqueCategories);
+      } catch (error) {
+        console.error('Failed to fetch menu items:', error);
+      }
+    }
+
+    fetchMenuItems();
+  }, []);
 
   const handleAddToCart = (item: MenuItem) => {
     addItem({
@@ -157,7 +54,7 @@ export default function MenuPage() {
   };
 
   const handleGoToCart = () => {
-    router.push('/cart'); // Make sure you have this route set up in your Next.js app
+    router.push('/cart');
   };
 
   return (
@@ -171,17 +68,12 @@ export default function MenuPage() {
 
       <Tabs defaultValue="all" className="w-full">
         <TabsList className="flex justify-center mb-8">
-          <TabsTrigger value="all">Kids Special</TabsTrigger>
-          <TabsTrigger value="starters">Adult Lunch Specials</TabsTrigger>
-          <TabsTrigger value="mains">Appetizers</TabsTrigger>
-          <TabsTrigger value="desserts">Sandwitch & Wraps</TabsTrigger>
-          {/* <TabsTrigger value="desserts">Sandwitch & Wraps</TabsTrigger>
-          <TabsTrigger value="desserts">Sandwitch & Wraps</TabsTrigger>
-          <TabsTrigger value="desserts">Sandwitch & Wraps</TabsTrigger>
-          <TabsTrigger value="desserts">Sandwitch & Wraps</TabsTrigger>
-          <TabsTrigger value="desserts">Sandwitch & Wraps</TabsTrigger>
-          <TabsTrigger value="desserts">Sandwitch & Wraps</TabsTrigger>
-          <TabsTrigger value="desserts">Sandwitch & Wraps</TabsTrigger> */}
+          <TabsTrigger value="all">All</TabsTrigger>
+          {categories.map((category) => (
+            <TabsTrigger key={category} value={category}>
+              {category.charAt(0).toUpperCase() + category.slice(1)}
+            </TabsTrigger>
+          ))}
         </TabsList>
 
         <TabsContent value="all">
@@ -192,7 +84,7 @@ export default function MenuPage() {
           </div>
         </TabsContent>
 
-        {['starters', 'mains', 'desserts'].map((category) => (
+        {categories.map((category) => (
           <TabsContent key={category} value={category}>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {menuItems
@@ -205,13 +97,8 @@ export default function MenuPage() {
         ))}
       </Tabs>
 
-      {/* Go to Cart Button */}
       <div className="mt-8 flex justify-center">
-        <Button 
-          size="lg"
-          onClick={handleGoToCart}
-          className="px-8 py-6 text-lg"
-        >
+        <Button size="lg" onClick={handleGoToCart} className="px-8 py-6 text-lg">
           Go to Cart
         </Button>
       </div>
@@ -224,7 +111,7 @@ function MenuCard({ item, onAddToCart }: { item: MenuItem; onAddToCart: (item: M
     <Card className="overflow-hidden">
       <div className="relative h-48">
         <img
-          src={item.image}
+          src={item.image}  // Use the full URL from backend
           alt={item.name}
           className="absolute inset-0 w-full h-full object-cover"
         />

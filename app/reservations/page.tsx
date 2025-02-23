@@ -15,9 +15,39 @@ export default function ReservationsPage() {
   const [date, setDate] = useState<Date>();
   const [formSubmitted, setFormSubmitted] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setFormSubmitted(true);
+  
+    // Prepare the data to send
+    const reservationData = {
+      action: 'reservation', // Add action parameter
+      name: (e.target as HTMLFormElement).name.value,
+      email: (e.target as HTMLFormElement).email.value,
+      phone: (e.target as HTMLFormElement).phone.value,
+      guests: (e.target as HTMLFormElement).guests.value,
+      date: date ? format(date, 'PPP') : '',
+      time: (e.target as HTMLFormElement).time.value,
+      specialRequests: (e.target as HTMLFormElement)['special-requests'].value,
+      callback: 'handleResponse' // JSONP callback function name
+    };
+  
+    // Convert data to query parameters
+    const queryParams = new URLSearchParams(reservationData).toString();
+  
+    // Create a script element for JSONP
+    const script = document.createElement('script');
+    script.src = `https://script.google.com/macros/s/AKfycbxawihDVdy_QX_xZHONC474V9yNQ4OMm9SSZx4G5VAUYCXwUQBEvDiExMDYdmC9Bdg/exec?${queryParams}`;
+    document.body.appendChild(script);
+  
+    // Define the callback function
+    window.handleResponse = (response) => {
+      if (response.success) {
+        setFormSubmitted(true); // Show confirmation message
+      } else {
+        alert('Failed to submit reservation. Please try again.');
+      }
+      document.body.removeChild(script); // Clean up the script element
+    };
   };
 
   return (

@@ -1,6 +1,12 @@
 'use client';
 
 import { useState } from 'react';
+
+declare global {
+  interface Window {
+    handleResponse: (response: { success: any }) => void;
+  }
+}
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -60,14 +66,47 @@ export default function OrderPage() {
     return true;
   };
 
-  const handlePayment = () => {
-    if (validateForm()) {
-      setIsLoading(true);
-      // Simulate loading time for the animation before redirecting to payment
-      setTimeout(() => {
-        router.push('/payment'); // Redirect to your payment gateway page
-      }, 2000);
-    }
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!validateForm()) return;
+
+    setIsLoading(true);
+
+    // Prepare the data to send
+    const orderData = {
+      action: 'order', // Add action parameter
+      orderType,
+      street: formData.street,
+      apt: formData.apt,
+      city: formData.city,
+      state: formData.state,
+      zip: formData.zip,
+      date: date ? format(date, 'PPP') : '',
+      time: formData.time,
+      instructions: formData.instructions,
+      callback: 'handleResponse' // JSONP callback function name
+    };
+
+    // Convert data to query parameters
+    const queryParams = new URLSearchParams(orderData).toString();
+
+    // Create a script element for JSONP
+    const script = document.createElement('script');
+    script.src = `https://script.google.com/macros/s/AKfycbxawihDVdy_QX_xZHONC474V9yNQ4OMm9SSZx4G5VAUYCXwUQBEvDiExMDYdmC9Bdg/exec?${queryParams}`;
+    document.body.appendChild(script);
+
+    // Define the callback function
+    window.handleResponse = (response: { success: any; }) => {
+      if (response.success) {
+        setIsLoading(false);
+        router.push('/order'); // Redirect to payment page after successful submission
+      } else {
+        setError('Failed to submit order. Please try again.');
+        setIsLoading(false);
+      }
+      document.body.removeChild(script); // Clean up the script element
+    };
   };
 
   if (isLoading) {
@@ -100,7 +139,7 @@ export default function OrderPage() {
         <div className="w-5/12">
           <Card className="bg-white/40 backdrop-blur-sm border-0 shadow-xl">
             <div className="p-6">
-              <form onSubmit={(e) => e.preventDefault()}>
+              <form onSubmit={handleSubmit}>
                 {error && (
                   <Alert variant="destructive" className="mb-6 bg-red-500/80">
                     <AlertDescription className="text-white">{error}</AlertDescription>
@@ -269,7 +308,7 @@ export default function OrderPage() {
                 <Button
                   className="w-full bg-primary hover:bg-primary/90 text-white"
                   size="lg"
-                  onClick={handlePayment}
+                  type="submit"
                 >
                   Proceed to Payment
                 </Button>
